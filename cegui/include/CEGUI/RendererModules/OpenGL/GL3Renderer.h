@@ -195,12 +195,14 @@ protected:
 
     void initialiseGLExtensions();
 
+protected:
     /*!
     \brief
         Destructor for OpenGL3Renderer objects
     */
     virtual ~OpenGL3Renderer();
 
+private:
     //! initialise OGL3TextureTargetFactory that will generate TextureTargets
     void initialiseTextureTargetFactory();
 
