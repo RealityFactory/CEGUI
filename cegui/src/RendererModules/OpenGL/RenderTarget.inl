@@ -150,6 +150,11 @@ OpenGLRendererBase& OpenGLRenderTarget<T>::getOwner()
 {
     return d_owner;
 }
+    //Older glm versions use degrees as parameter here by default (Unless radians are forced via GLM_FORCE_RADIANS). Newer versions of glm exlusively use radians.
+#if (GLM_VERSION_MAJOR == 0 && GLM_VERSION_MINOR <= 9 && GLM_VERSION_PATCH < 6)
+#else
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(30.f), aspect, float(d_viewDistance * 0.5), float(d_viewDistance * 2.0));
+#endif
 
 
 //----------------------------------------------------------------------------//
