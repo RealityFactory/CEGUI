@@ -1,9 +1,9 @@
 /***********************************************************************
-created:    29/5/2012
+created:    18/4/2015
 author:     Lukas E Meindl
 *************************************************************************/
 /***************************************************************************
-*   Copyright (C) 2004 - 2012 Paul D Turner & The CEGUI Development Team
+*   Copyright (C) 2004 - 2015 Paul D Turner & The CEGUI Development Team
 *
 *   Permission is hereby granted, free of charge, to any person obtaining
 *   a copy of this software and associated documentation files (the
@@ -24,18 +24,37 @@ author:     Lukas E Meindl
 *   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 *   OTHER DEALINGS IN THE SOFTWARE.
 ***************************************************************************/
-#ifndef _SampleBase_h_
-#define _SampleBase_h_
+#ifndef _LookNFeelOverview_Demo_
+#define _LookNFeelOverview_Demo_
 
 #include "Sample.h"
+#include "CEGUI/ForwardRefs.h"
 
-// This header serves as a base for all samples and is needed inside the
-// SamplesFramework as interface for Samples that will be loaded.
+// Sample class
+class LookNFeelOverviewSample : public Sample
+{
+public:
+    LookNFeelOverviewSample();
 
-#if (defined( __WIN32__ ) || defined( _WIN32 )) && !defined(CEGUI_STATIC)
-#   define SAMPLE_EXPORT __declspec(dllexport)
-#else
-#   define SAMPLE_EXPORT
-#endif
+    // method to initialse the samples windows and events.
+    virtual bool initialise(CEGUI::GUIContext* guiContext);
+
+    // method to perform any required cleanup operations.
+    virtual void deinitialise();
+
+protected:
+    bool handleSkinSelectionAccepted(const CEGUI::EventArgs& args);
+
+    // We store some items for comparison
+    CEGUI::StandardItem* d_taharezLookListboxItem;
+    CEGUI::StandardItem* d_vanillaLookListboxItem;
+
+    // We want to change the default font later so we store some fonts in variables
+    CEGUI::Font* d_fontForTaharez;
+    CEGUI::Window* d_taharezOverviewLayout;
+
+    CEGUI::Window* d_loadedLayoutContainer;
+    CEGUI::GUIContext* d_guiContext;
+};
 
 #endif

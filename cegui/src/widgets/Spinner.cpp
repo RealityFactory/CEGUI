@@ -81,6 +81,12 @@ namespace CEGUI
         PushButton* decreaseButton = getDecreaseButton();
         Editbox* editbox = getEditbox();
 
+        // ban properties forwarded from here
+        editbox->banPropertyFromXML(Window::TextPropertyName);
+        editbox->banPropertyFromXML("ValidationString");
+        increaseButton->banPropertyFromXML(Window::CursorAutoRepeatEnabledPropertyName);
+        decreaseButton->banPropertyFromXML(Window::CursorAutoRepeatEnabledPropertyName);
+
         // setup component controls
         increaseButton->setCursorAutoRepeatEnabled(true);
         decreaseButton->setCursorAutoRepeatEnabled(true);
