@@ -378,14 +378,12 @@
                 <Property name="Area" value="{{0.436719,0},{0.119445,0},{0.514844,0},{0.1625,0}}" />
                 <Property name="Text" value="StaticImage with an Image:" />
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                <Property name="TooltipText" value="This tooltip will be inherited to children windows" />
-                <Property name="TooltipType" value="TaharezLook/Tooltip" />
                 <Property name="HorzFormatting" value="WordWrapCentreAligned" />
                 <Property name="VertFormatting" value="TopAligned" />
                 <Property name="NormalTextColour" value="FFFFFFFF" />
                 <Property name="DisabledTextColour" value="FFFFFFFF" />
             </Window>
-        </Window>
+
             <Window type="TaharezLook/StaticImage" name="StaticImage2" >
                 <Property name="Area" value="{{0.450782,0},{0.163889,0},{0.501563,0},{0.227778,0}}" />
                 <Property name="Image" value="TaharezLook/UpArrow" />
