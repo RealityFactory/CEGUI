@@ -36,6 +36,7 @@
 namespace CEGUI
 {
 
+    
 OpenGLRenderTarget::OpenGLRenderTarget(OpenGLRendererBase& owner) :
     d_owner(owner)
 {

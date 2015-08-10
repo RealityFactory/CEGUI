@@ -40,8 +40,8 @@ namespace CEGUI
 class CEGUIEXPORT TextureTarget : virtual public RenderTarget
 {
 public:
+    TextureTarget(bool addStencilBuffer) : d_usesStencil(addStencilBuffer) {}
     virtual ~TextureTarget();
-
 
     /*!
     \brief
@@ -89,7 +89,7 @@ public:
 
 protected:
     //! Determines if the instance has a stencil buffer attached or not
-    bool d_usesStencil = false;
+    bool d_usesStencil;
 };
 
 } // End of  CEGUI namespace section
