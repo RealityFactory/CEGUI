@@ -99,6 +99,7 @@ void OpenGL3GeometryBuffer::draw() const
     else
     {
         d_glStateChanger->bindBuffer(GL_ARRAY_BUFFER, d_verticesVBO);
+        // This binds and sets up a vbo for rendering
     }
 
     const int pass_count = d_effect ? d_effect->getPassCount() : 1;

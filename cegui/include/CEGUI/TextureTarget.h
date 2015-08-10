@@ -35,12 +35,13 @@ namespace CEGUI
 /*!
 \brief
     Specialisation of RenderTarget interface that should be used as the base
-    class for RenderTargets that are implemented using textures.
+    class for render-to-texture targets (RTT) - RenderTargets using textures.
 */
-class CEGUIEXPORT TextureTarget : public RenderTarget
+class CEGUIEXPORT TextureTarget : virtual public RenderTarget
 {
 public:
     TextureTarget(bool usesStencil) : d_usesStencil(usesStencil) {}
+    virtual ~TextureTarget();
 
     /*!
     \brief
@@ -84,7 +85,7 @@ public:
         - true if a stencil buffer is attached
         - false if no stencil buffer is attached
     */
-    bool getUsesStencil() const {return d_usesStencil;}
+    bool getUsesStencil() const;
 
 protected:
     //! Determines if the instance has a stencil buffer attached or not

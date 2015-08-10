@@ -1,9 +1,9 @@
 /***********************************************************************
-    created:    Wed, 8th Feb 2012
-    author:     Lukas E Meindl (based on code by Paul D Turner)
+    created:    Sun, 6th April 2014
+    author:     Lukas E Meindl
 *************************************************************************/
 /***************************************************************************
- *   Copyright (C) 2004 - 2012 Paul D Turner & The CEGUI Development Team
+ *   Copyright (C) 2004 - 2014 Paul D Turner & The CEGUI Development Team
  *
  *   Permission is hereby granted, free of charge, to any person obtaining
  *   a copy of this software and associated documentation files (the
@@ -24,68 +24,55 @@
  *   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *   OTHER DEALINGS IN THE SOFTWARE.
  ***************************************************************************/
-#include "CEGUI/RendererModules/OpenGL/RenderTarget.h"
-#include "CEGUI/RendererModules/OpenGL/GeometryBufferBase.h"
+#include "CEGUI/RendererModules/Direct3D11/RenderTarget.h"
+#include "CEGUI/RendererModules/Direct3D11/GeometryBuffer.h"
 
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <cmath>
+#include <math.h>
 
 // Start of CEGUI namespace section
 namespace CEGUI
 {
-//----------------------------------------------------------------------------//
-template <typename T>
-OpenGLRenderTarget<T>::OpenGLRenderTarget(OpenGLRendererBase& owner) :
-    TextureTarget(addStencilBuffer)
+
+Direct3D11RenderTarget::Direct3D11RenderTarget(Direct3D11Renderer& owner) :
     d_owner(owner),
-    
+    d_device(*d_owner.getDirect3DDevice()),
+    d_deviceContext(*d_owner.getDirect3DDeviceContext())
 {
 }
 
-//----------------------------------------------------------------------------//
-template <typename T>
-OpenGLRenderTarget<T>::~OpenGLRenderTarget()
+void Direct3D11RenderTarget::activate()
 {
-}
-
-//----------------------------------------------------------------------------//
-template <typename T>
-void OpenGLRenderTarget<T>::activate()
-{
-    glViewport(static_cast<GLsizei>(RenderTarget::d_area.left()),
-               static_cast<GLsizei>(RenderTarget::d_area.top()),
-               static_cast<GLsizei>(RenderTarget::d_area.getWidth()),
-               static_cast<GLsizei>(RenderTarget::d_area.getHeight()));
-
-    if (!RenderTarget::d_matrixValid)
+    if (!d_matrixValid)
         updateMatrix();
+
+    D3D11_VIEWPORT vp;
+    setupViewport(vp);
+    d_deviceContext.RSSetViewports(1, &vp);
 
     d_owner.setViewProjectionMatrix(RenderTarget::d_matrix);
 
     RenderTarget::activate();
 }
 
-//----------------------------------------------------------------------------//
-template <typename T>
-void OpenGLRenderTarget<T>::unprojectPoint(const GeometryBuffer& buff,
+void Direct3D11RenderTarget::unprojectPoint(const GeometryBuffer& buff,
     const glm::vec2& p_in, glm::vec2& p_out) const
 {
-    if (!RenderTarget::d_matrixValid)
+    if (!d_matrixValid)
         updateMatrix();
+    
+    const Direct3D11GeometryBuffer& gb =
+        static_cast<const Direct3D11GeometryBuffer&>(buff);
 
-    const OpenGLGeometryBufferBase& gb =
-        static_cast<const OpenGLGeometryBufferBase&>(buff);
-
-    const GLint vp[4] = {
-        static_cast<GLint>(RenderTarget::d_area.left()),
-        static_cast<GLint>(RenderTarget::d_area.top()),
-        static_cast<GLint>(RenderTarget::d_area.getWidth()),
-        static_cast<GLint>(RenderTarget::d_area.getHeight())
+    const int vp[4] = {
+        static_cast<int>(d_area.left()),
+        static_cast<int>(d_area.top()),
+        static_cast<int>(d_area.getWidth()),
+        static_cast<int>(d_area.getHeight())
     };
 
-    GLfloat in_x = 0.0f, in_y = 0.0f, in_z = 0.0f;
+    double in_x, in_y, in_z;
 
     glm::ivec4 viewPort = glm::ivec4(vp[0], vp[1], vp[2], vp[3]);
     const glm::mat4& projMatrix = RenderTarget::d_matrix;
@@ -94,9 +81,9 @@ void OpenGLRenderTarget<T>::unprojectPoint(const GeometryBuffer& buff,
     // unproject the ends of the ray
     glm::vec3 unprojected1;
     glm::vec3 unprojected2;
-    in_x = vp[2] * 0.5f;
-    in_y = vp[3] * 0.5f;
-    in_z = -RenderTarget::d_viewDistance;
+    in_x = vp[2] * 0.5;
+    in_y = vp[3] * 0.5;
+    in_z = -d_viewDistance;
     unprojected1 =  glm::unProject(glm::vec3(in_x, in_y, in_z), modelMatrix, projMatrix, viewPort);
     in_x = p_in.x;
     in_y = vp[3] - p_in.y;
@@ -136,23 +123,28 @@ void OpenGLRenderTarget<T>::unprojectPoint(const GeometryBuffer& buff,
 
     p_out.x = static_cast<float>(is_x);
     p_out.y = static_cast<float>(is_y);
+
+    p_out = p_in; // CrazyEddie wanted this
 }
 
-//----------------------------------------------------------------------------//
-template <typename T>
-void OpenGLRenderTarget<T>::updateMatrix() const
+void Direct3D11RenderTarget::updateMatrix() const
 {
-    RenderTarget::updateMatrix( RenderTarget::createViewProjMatrixForOpenGL() );
+    RenderTarget::updateMatrix( RenderTarget::createViewProjMatrixForDirect3D() );
 }
 
+void Direct3D11RenderTarget::setupViewport(D3D11_VIEWPORT& vp) const
+{
+    vp.TopLeftX = static_cast<FLOAT>(d_area.left());
+    vp.TopLeftY = static_cast<FLOAT>(d_area.top());
+    vp.Width = static_cast<FLOAT>(d_area.getWidth());
+    vp.Height = static_cast<FLOAT>(d_area.getHeight());
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+}
 
-//----------------------------------------------------------------------------//
-template <typename T>
-OpenGLRendererBase& OpenGLRenderTarget<T>::getOwner()
+Direct3D11Renderer& Direct3D11RenderTarget::getOwner()
 {
     return d_owner;
 }
-
-//----------------------------------------------------------------------------//
 
 } // End of  CEGUI namespace section
