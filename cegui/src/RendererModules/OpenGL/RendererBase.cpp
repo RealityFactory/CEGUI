@@ -87,7 +87,7 @@ void OpenGLRendererBase::init(bool init_glew, bool set_glew_experimental)
 {
     d_displayDPI.x = 96;
     d_displayDPI.y = 96;
-    d_initExtraStates = false;
+    d_isStateResettingEnabled = true;
     d_activeBlendMode = BM_INVALID;
 #if defined CEGUI_USE_GLEW
     if (init_glew)
@@ -370,10 +370,14 @@ void OpenGLRendererBase::setDisplaySize(const Sizef& sz)
     }
 }
 
-//----------------------------------------------------------------------------//
-void OpenGLRendererBase::enableExtraStateSettings(bool setting)
+void OpenGLRendererBase::setStateResettingEnabled(bool setting)
 {
-    d_initExtraStates = setting;
+    d_isStateResettingEnabled = setting;
+}
+
+bool OpenGLRendererBase::getStateResettingEnabled()
+{
+    return d_isStateResettingEnabled;
 }
 
 //----------------------------------------------------------------------------//

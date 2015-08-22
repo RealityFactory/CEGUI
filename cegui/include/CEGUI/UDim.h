@@ -198,7 +198,7 @@ public:
         s >> optionalChar<'{'> >> val.d_scale >> optionalChar<','> >> val.d_offset >> optionalChar<'}'>;
         return s;
     }
-    
+
     /*!
     \brief finger saving convenience method returning UDim(0, 0)
     */
