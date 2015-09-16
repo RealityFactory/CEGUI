@@ -257,7 +257,7 @@ void FontsDemo::deinitialise()
 {
 }
 
-bool FontsDemo::handleFontCreationButtonClicked(const EventArgs& e)
+bool FontsDemo::handleFontCreationButtonClicked(const EventArgs&)
 {
     FontManager& fontMgr(FontManager::getSingleton());
 
@@ -283,7 +283,7 @@ bool FontsDemo::handleFontCreationButtonClicked(const EventArgs& e)
 
 
     String::size_type pos = fontFileName.rfind(".imageset");
-    if(pos != -1)
+    if(pos != String::npos)
     {
         CEGUI::Font& createdFont = fontMgr.createPixmapFont(fontName, fontFileName, Font::getDefaultResourceGroup(), autoScaleMode,
             CEGUI::Sizef(1280.0f, 720.0f), XREA_THROW);
@@ -302,7 +302,7 @@ bool FontsDemo::handleFontCreationButtonClicked(const EventArgs& e)
 }
 
 
-bool FontsDemo::handleFontEditButtonClicked(const EventArgs& e)
+bool FontsDemo::handleFontEditButtonClicked(const EventArgs&)
 {
     FontManager& fontMgr(FontManager::getSingleton());
 
@@ -338,7 +338,7 @@ bool FontsDemo::handleFontEditButtonClicked(const EventArgs& e)
     return true;
 }
 
-bool FontsDemo::handleFontSelectionChanged(const EventArgs& e)
+bool FontsDemo::handleFontSelectionChanged(const EventArgs&)
 {
     //Change font of the selected language/text sample
     if(d_textSelector->getFirstSelectedItem() && d_fontSelector->getFirstSelectedItem())
@@ -405,7 +405,7 @@ bool FontsDemo::handleFontSelectionChanged(const EventArgs& e)
     return true;
 }
 
-bool FontsDemo::handleTextSelectionChanged(const EventArgs& e)
+bool FontsDemo::handleTextSelectionChanged(const EventArgs&)
 {
     if(d_textSelector->getFirstSelectedItem())
     {
@@ -419,7 +419,7 @@ bool FontsDemo::handleTextSelectionChanged(const EventArgs& e)
     return true;
 }
 
-bool FontsDemo::handleTextMultiLineEditboxTextChanged(const EventArgs& e)
+bool FontsDemo::handleTextMultiLineEditboxTextChanged(const EventArgs&)
 {
     if(d_textSelector->getFirstSelectedItem())
     {
@@ -431,14 +431,14 @@ bool FontsDemo::handleTextMultiLineEditboxTextChanged(const EventArgs& e)
     return true;
 }
 
-bool FontsDemo::handleFontFileNameSelectionChanged(const EventArgs& e)
+bool FontsDemo::handleFontFileNameSelectionChanged(const EventArgs&)
 {
     generateNewFontName();
 
     return true;
 }
 
-bool FontsDemo::handleRenewFontNameButtonClicked(const EventArgs& e)
+bool FontsDemo::handleRenewFontNameButtonClicked(const EventArgs&)
 {
     generateNewFontName();
 
