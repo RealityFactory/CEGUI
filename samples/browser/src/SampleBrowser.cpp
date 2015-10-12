@@ -412,7 +412,7 @@ SampleHandler* SampleBrowser::findSampleData(CEGUI::Window* sampleWindow)
 }
 
 //----------------------------------------------------------------------------//
-bool SampleBrowser::handleSampleExitButtonClicked(const CEGUI::EventArgs& args)
+bool SampleBrowser::handleSampleExitButtonClicked(const CEGUI::EventArgs&)
 {
     d_quittingSampleView = true;
 
