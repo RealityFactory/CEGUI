@@ -4234,6 +4234,8 @@ CEGUIEXPORT std::basic_istream<char>& operator>>(std::basic_istream<char>& input
 
 }
 
+#if CEGUI_STRING_CLASS != CEGUI_STRING_CLASS_STD
+
 namespace std
 {
 

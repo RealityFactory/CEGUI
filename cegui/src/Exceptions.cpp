@@ -33,22 +33,23 @@
 #include <sstream>
 
 #if defined( __WIN32__ ) || defined( _WIN32)
-#include <windows.h>
+#   include <windows.h>
 #endif
 
 #if defined(_MSC_VER)
 #   pragma warning(push)
 #   pragma warning(disable : 4091)
-#include <dbghelp.h>
+#   include <dbghelp.h>
 #   pragma warning(pop)
-
-#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__HAIKU__)
-#ifndef __ANDROID__
+#elif defined(__ANDROID__)
+#   include <android/log.h>
+#elif     (defined(__linux__) && !defined(__ANDROID__)) \
+      ||  defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) \
+      ||  defined(__HAIKU__)
 #   include <execinfo.h>
-#endif
-#include <dlfcn.h>
-#include <cxxabi.h>
-#include <stddef.h>
+#   include <dlfcn.h>
+#   include <cxxabi.h>
+#   include <cstddef>
 #endif
 
 // Start of CEGUI namespace section
@@ -60,6 +61,14 @@ bool Exception::d_stdErrEnabled(true);
 //----------------------------------------------------------------------------//
 static void dumpBacktrace(size_t frames)
 {
+
+#if defined(__ANDROID__)
+
+    // Not implemented yet.
+    CEGUI_UNUSED(frames);
+
+#else
+
 #if defined(_DEBUG) || defined(DEBUG)
 #if defined(_MSC_VER)
     SymSetOptions(SYMOPT_DEFERRED_LOADS | SYMOPT_INCLUDE_32BIT_MODULES);
@@ -179,7 +188,19 @@ static void dumpBacktrace(size_t frames)
     }
 
     logger.logEvent("==========  End of Backtrace  ==========", Errors);
+
+#else
+
+    CEGUI_UNUSED(frames);
+    
 #endif
+
+#else
+
+    CEGUI_UNUSED(frames);
+
+#endif
+
 #endif
 }
 
@@ -208,6 +229,9 @@ Exception::Exception(const String& message, const String& name,
         // nobody seems to look in their log file!
         std::cerr << what() << std::endl;
     }
+#ifdef __ANDROID__
+    __android_log_print(ANDROID_LOG_ERROR, "CEGUIBase", "Exception thrown: %s", what());
+#endif
 }
 
 //----------------------------------------------------------------------------//

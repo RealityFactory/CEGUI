@@ -89,6 +89,8 @@ macro (cegui_add_dependency_dynamic_libs _TARGET_NAME _DEP_NAME)
             else()
                 target_link_libraries(${_TARGET_NAME} ${${_DEP_NAME}_LIBRARIES})
             endif()
+        elseif (${_DEP_NAME}_LIBRARIES_DBG)
+                target_link_libraries(${_TARGET_NAME} ${${_DEP_NAME}_LIBRARIES_DBG})
         endif()
     endif()
 endmacro()
@@ -112,6 +114,8 @@ macro (cegui_add_dependency_static_libs _TARGET_NAME _DEP_NAME)
             else()
                 target_link_libraries(${_TARGET_NAME} ${${_DEP_NAME}_LIBRARIES_STATIC})
             endif()
+        elseif (${_DEP_NAME}_LIBRARIES_STATIC_DBG)
+            target_link_libraries(${_TARGET_NAME} ${${_DEP_NAME}_LIBRARIES_STATIC_DBG})
         else()
             cegui_add_dependency_dynamic_libs(${_TARGET_NAME} ${_DEP_NAME})
         endif()
@@ -120,18 +124,46 @@ endmacro()
 
 #
 # add a dependency to a target (and it's static equivalent, if it exists).
-# An optional "scope" 3rd argument can be specified to determine the "scope"
+#
+# An optional "SCOPE" 3rd argument can be specified to determine the "scope"
 # argument passed to "target_include_directories". This argument can be one of
 # "INTERFACE", "PUBLIC" and "PRIVATE", the default being "PRIVATE". In general,
 # u should use "PUBLIC" if every target that depends on "_TARGET_NAME" should also
 # compile with "_DEP_NAME"'s include directories. Please refer to the
 # documentation of "target_include_directories" for more details.
 #
+# An optional "IS_SYSTEM" 4th argument can be specified to determine whether to
+# treat the headers of the dependency as system headers. This usually means that
+# the compiler won't generate warnings for these headers. The default is
+# "FALSE".
+#
 macro (cegui_add_dependency _TARGET_NAME _DEP_NAME)
-    if (${ARGC} GREATER 2)
-        target_include_directories(${_TARGET_NAME} ${ARGV2} ${${_DEP_NAME}_INCLUDE_DIR})
+# Optional additional arguments: "SCOPE" "IS_SYSTEM"
+    get_target_property(_DYNAMIC_EXISTS ${_TARGET_NAME} TYPE)
+    get_target_property(_STATIC_EXISTS ${_TARGET_NAME}_Static TYPE)
+    if ("${ARGC}" GREATER 2)
+        if (("${ARGC}" GREATER 3) AND "${ARGV3}")
+            if (_DYNAMIC_EXISTS)
+                target_include_directories(${_TARGET_NAME} SYSTEM "${ARGV2}" ${${_DEP_NAME}_INCLUDE_DIR})
+            endif()
+            if (_STATIC_EXISTS)
+                target_include_directories(${_TARGET_NAME}_Static SYSTEM "${ARGV2}" ${${_DEP_NAME}_INCLUDE_DIR})
+            endif()
+        else ()
+            if (_DYNAMIC_EXISTS)
+                target_include_directories(${_TARGET_NAME} "${ARGV2}" ${${_DEP_NAME}_INCLUDE_DIR})
+            endif()
+            if (_STATIC_EXISTS)
+                target_include_directories(${_TARGET_NAME}_Static "${ARGV2}" ${${_DEP_NAME}_INCLUDE_DIR})
+            endif()
+        endif ()
     else ()
-        target_include_directories(${_TARGET_NAME} PRIVATE ${${_DEP_NAME}_INCLUDE_DIR})
+        if (_DYNAMIC_EXISTS)
+            target_include_directories(${_TARGET_NAME} PRIVATE ${${_DEP_NAME}_INCLUDE_DIR})
+        endif()
+        if (_STATIC_EXISTS)
+            target_include_directories(${_TARGET_NAME}_Static PRIVATE ${${_DEP_NAME}_INCLUDE_DIR})
+        endif()
     endif ()
 
     ###########################################################################
@@ -159,8 +191,6 @@ macro (cegui_add_dependency _TARGET_NAME _DEP_NAME)
     ###########################################################################
     #    ADD DEPENDENCY DEFS TO STATIC VERSION OF TARGET (if it exists)
     ###########################################################################
-    get_target_property(_STATIC_EXISTS ${_TARGET_NAME}_Static TYPE)
-
     if (_STATIC_EXISTS)
         if (${_DEP_NAME}_DEFINITIONS)
             set_property( TARGET ${_TARGET_NAME}_Static APPEND PROPERTY COMPILE_DEFINITIONS ${${_DEP_NAME}_DEFINITIONS} )
@@ -253,7 +283,7 @@ macro (cegui_add_library_impl _LIB_NAME _IS_MODULE _SOURCE_FILES_VAR _HEADER_FIL
         # Do not version modules, since we dlopen these directly and need to know
         # the name is what we think it will be (and not rely on symlinks which will
         # not be installed always, but usually only as part of *-dev packages).
-        if (NOT ${_IS_MODULE})
+        if (NOT ${_IS_MODULE} AND NOT ANDROID)
             if (NOT APPLE OR CEGUI_APPLE_DYLIB_SET_VERSION_INFO)
                 set_target_properties(${_LIB_NAME} PROPERTIES
                     VERSION ${CEGUI_ABI_VERSION}
@@ -602,7 +632,10 @@ endmacro()
 #
 # NOTE: On platforms where the dependency pack is not intended to be used, the
 # extra library configurations are NOT checked, on those platforms we will use
-# the base library only.
+# the base library only. Also note that on those platforms, if only release
+# libraries are available we'll always use them (regardless of
+# "CMAKE_CONFIGURATION_TYPES" and "CMAKE_BUILD_TYPE"), and if only debug
+# libraries are available we'll always use them.
 #
 # _PKGNAME: The name of package we're checking for.
 # _LIBBASENAMEVAR: name of the library base name variable.  This name will be
@@ -635,29 +668,21 @@ macro (cegui_find_package_handle_standard_args _PKGNAME _LIBBASENAMEVAR)
             unset (_WANT_REL_LIBS)
         endif()
 
-        if (CEGUI_BUILD_SHARED_LIBS_WITH_STATIC_DEPENDENCIES)
-            if (_WANT_REL_LIBS)
+        if (CEGUI_BUILD_SHARED_LIBS_WITH_STATIC_DEPENDENCIES OR CEGUI_BUILD_STATIC_CONFIGURATION)
+            if ((_WANT_REL_LIBS AND ${_LIBBASENAMEVAR}_STATIC) OR NOT ${_LIBBASENAMEVAR}_STATIC_DBG)
                 list(APPEND _FPHSA_LIBS ${_LIBBASENAMEVAR}_STATIC)
             endif()
-            if (_WANT_DBG_LIBS)
+            if ((_WANT_DBG_LIBS AND ${_LIBBASENAMEVAR}_STATIC_DBG) OR NOT ${_LIBBASENAMEVAR}_STATIC)
                 list(APPEND _FPHSA_LIBS ${_LIBBASENAMEVAR}_STATIC_DBG)
             endif()
-        else()
-            if (CEGUI_BUILD_DYNAMIC_CONFIGURATION)
-                if (_WANT_REL_LIBS)
-                    list(APPEND _FPHSA_LIBS ${_LIBBASENAMEVAR})
-                endif()
-                if (_WANT_DBG_LIBS)
-                    list(APPEND _FPHSA_LIBS ${_LIBBASENAMEVAR}_DBG)
-                endif()
+        endif ()
+        
+        if (CEGUI_BUILD_DYNAMIC_CONFIGURATION)
+            if (_WANT_REL_LIBS)
+                list(APPEND _FPHSA_LIBS ${_LIBBASENAMEVAR})
             endif()
-            if (CEGUI_BUILD_STATIC_CONFIGURATION)
-                if (_WANT_REL_LIBS)
-                    list(APPEND _FPHSA_LIBS ${_LIBBASENAMEVAR}_STATIC)
-                endif()
-                if (_WANT_DBG_LIBS)
-                    list(APPEND _FPHSA_LIBS ${_LIBBASENAMEVAR}_STATIC_DBG)
-                endif()
+            if (_WANT_DBG_LIBS)
+                list(APPEND _FPHSA_LIBS ${_LIBBASENAMEVAR}_DBG)
             endif()
         endif()
     else()
@@ -708,4 +733,3 @@ macro(cegui_defaultmodule_sanity_test _DEFAULTVAR _MODNAME _BUILDVAR)
         endif()
     endif()
 endmacro()
-
