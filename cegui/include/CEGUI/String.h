@@ -1315,10 +1315,17 @@ public:
     \return Returns an iterator pointing to the first inserted character (code point). Returns
         "iter" if no characters were inserted.
     */
+#if defined (_MSC_VER)
     iterator insert(const_iterator iter, size_type count, char32_t ch)
     {
         return d_string.insert(iter, count, ch);
     }
+#else 
+    void insert(iterator iter, size_type count, char32_t ch)
+    {
+        d_string.insert(iter, count, ch);
+    }
+#endif
 
     /*!
     \brief
@@ -1333,10 +1340,17 @@ public:
     \return Returns an iterator pointing to the first inserted character (code point). Returns
         "iter" if no characters were inserted.
     */
+#if defined (_MSC_VER)
     iterator insert(const_iterator iter, size_type count, char ch)
     {
         return d_string.insert(iter, count, convertUtf8ToUtf32(ch)[0]);
     }
+#else
+    void insert(iterator iter, size_type count, char ch)
+    {
+        d_string.insert(iter, count, convertUtf8ToUtf32(ch)[0]);
+    }
+#endif
 
     /*!
     \brief
@@ -1358,7 +1372,7 @@ public:
 
     /*!
     \brief
-        Inserts elements from initialiher_list "initialiserList" before the element pointed by pos.
+        Inserts elements from initializer_list "initialiserList" before the element pointed by pos.
     \param iter
         The position iterator at which the characters will be inserted.
     \param initialiserList
@@ -1366,11 +1380,17 @@ public:
     \return Returns an iterator pointing to the first inserted character (code point). Returns
         "iter" if no characters were inserted.
     */
+#if defined (_MSC_VER)
     iterator insert(const_iterator iter, std::initializer_list<char32_t> initialiserList)
     {
         return d_string.insert(iter, initialiserList);
     }
-
+#else 
+    void insert(iterator iter, std::initializer_list<char32_t> initialiserList)
+    {
+        d_string.insert(iter, initialiserList);
+    }
+#endif
     /*!
     \brief
         Removes the specified number of characters starting at the index.
@@ -1393,7 +1413,11 @@ public:
         Iterator pointing at the character to remove.
     \return Iterator pointing to the character after the last removed character.
     */
+#if defined (_MSC_VER)
     iterator erase(const_iterator iter)
+#else
+    iterator erase(iterator iter)
+#endif
     {
         return d_string.erase(iter);
     }
@@ -1407,7 +1431,11 @@ public:
         Iterator pointing to the last character of the range of characters to remove.
     \return Iterator pointing to the character after the last removed character.
     */
+#if defined (_MSC_VER)
     iterator erase(const_iterator first, const_iterator last)
+#else
+    iterator erase(iterator first, iterator last)
+#endif
     {
         return d_string.erase(first, last);
     }
@@ -2142,7 +2170,11 @@ public:
     \return
         Returns a reference to this String (*this).
     */
+#if defined (_MSC_VER)
     String& replace(const_iterator first, const_iterator last, const String& str)
+#else
+    String& replace(iterator first, iterator last, const String& str)
+#endif
     {
         d_string.replace(first, last, str.d_string);
         return *this;
@@ -2160,7 +2192,11 @@ public:
     \return
         Returns a reference to this String (*this).
     */
+#if defined (_MSC_VER)
     String& replace(const_iterator first, const_iterator last, const std::u32string& str)
+#else
+    String& replace(iterator first, iterator last, const std::u32string& str)
+#endif
     {
         d_string.replace(first, last, str);
         return *this;
@@ -2179,7 +2215,11 @@ public:
     \return
         Returns a reference to this String (*this).
     */
+#if defined (_MSC_VER)
     String& replace(const_iterator first, const_iterator last, const std::string& str)
+#else 
+    String& replace(iterator first, iterator last, const std::string& str)
+#endif
     {
         d_string.replace(first, last, convertUtf8ToUtf32(str));
         return *this;
@@ -2338,8 +2378,13 @@ public:
     \return
         Returns a reference to this String (*this).
     */
+#if defined (_MSC_VER)
     String& replace(const_iterator first, const_iterator last,
                     const char32_t* charArray, size_type count2)
+#else
+    String& replace(iterator first, iterator last,
+                    const char32_t* charArray, size_type count2)
+#endif
     {
         d_string.replace(first, last, charArray, count2);
         return *this;
@@ -2362,8 +2407,13 @@ public:
     \return
         Returns a reference to this String (*this).
     */
+#if defined (_MSC_VER)
     String& replace(const_iterator first, const_iterator last,
                     const char* charArray, size_type count2)
+#else
+    String& replace(iterator first, iterator last,
+                    const char* charArray, size_type count2)
+#endif
     {
         d_string.replace(first, last, convertUtf8ToUtf32(charArray, charArray + count2).data(), npos);
         return *this;
@@ -2427,8 +2477,13 @@ public:
     \return
         Returns a reference to this String (*this).
     */
+#if defined (_MSC_VER)
     String& replace(const_iterator first, const_iterator last,
                     const char32_t* charArray)
+#else
+    String& replace(iterator first, iterator last,
+                    const char32_t* charArray)
+#endif
     {
         d_string.replace(first, last, charArray);
         return *this;
@@ -2450,8 +2505,13 @@ public:
     \return
         Returns a reference to this String (*this).
     */
+#if defined (_MSC_VER)
     String& replace(const_iterator first, const_iterator last,
                     const char* charArray)
+#else 
+    String& replace(iterator first, iterator last,
+                    const char* charArray)
+#endif
     {
         d_string.replace(first, last, convertUtf8ToUtf32(charArray).data());
         return *this;
@@ -2516,8 +2576,13 @@ public:
     \return
         Returns a reference to this String (*this).
     */
+#if defined (_MSC_VER)
     String& replace(const_iterator first, const_iterator last,
                     size_type count2, char32_t ch)
+#else
+    String& replace(iterator first, iterator last,
+                    size_type count2, char32_t ch)
+#endif
     {
         d_string.replace(first, last, count2, ch);
         return *this;
@@ -2538,8 +2603,13 @@ public:
     \return
         Returns a reference to this String (*this).
     */
+#if defined (_MSC_VER)
     String& replace(const_iterator first, const_iterator last,
                     size_type count2, char ch)
+#else
+    String& replace(iterator first, iterator last,
+                    size_type count2, char ch)
+#endif
     {
         d_string.replace(first, last, count2, convertUtf8ToUtf32(ch)[0]);
         return *this;
@@ -2558,8 +2628,13 @@ public:
     \return
         Returns a reference to this String (*this).
     */
+#if defined (_MSC_VER)
     String& replace(const_iterator first, const_iterator last,
                     std::initializer_list<char32_t> initialiserList)
+#else
+    String& replace(iterator first, iterator last,
+                    std::initializer_list<char32_t> initialiserList)
+#endif
     {
         d_string.replace(first, last, initialiserList);
         return *this;
