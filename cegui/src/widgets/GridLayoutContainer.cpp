@@ -372,6 +372,7 @@ size_t GridLayoutContainer::mapFromGridToIdx(size_t gridX,
 
     assert(gridX < gridWidth);
     assert(gridY < gridHeight);
+    CEGUI_UNUSED(gridHeight); // silence warning in release builds
 
     return gridY * gridWidth + gridX;
 }
@@ -393,6 +394,7 @@ void GridLayoutContainer::mapFromIdxToGrid(size_t idx,
     }
 
     assert(gridY < gridHeight);
+    CEGUI_UNUSED(gridHeight); // silence warning in release builds
 
     gridX = idx;
 }
@@ -460,7 +462,8 @@ size_t GridLayoutContainer::translateAPToGridIdx(size_t APIdx) const
         // 1 3 5
         // 2 4 6
 
-        size_t x, y;
+        size_t x = 0;
+        size_t y = 0;
         bool done = false;
 
         for (x = 0; x < d_gridWidth; ++x)

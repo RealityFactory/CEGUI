@@ -319,6 +319,7 @@ void OpenGLTexture::blitFromMemory(const void* sourceData, const Rectf& area)
 }
 
 //----------------------------------------------------------------------------//
+
 void OpenGLTexture::updateCachedScaleValues()
 {
     // Update the scale of a texel based on the absolute size
