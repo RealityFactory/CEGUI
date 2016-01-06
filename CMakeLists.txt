@@ -10,10 +10,6 @@ if (POLICY CMP0045)
     cmake_policy(SET CMP0045 OLD)
 endif()
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(CEGUIMacros)
-include(CMakeDependentOption)
-
 if (APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
     set( CMAKE_OSX_ARCHITECTURES x86_64 CACHE STRING "Build architectures for Mac OS X")
 endif()
@@ -27,6 +23,10 @@ endif()
 # Start of main Project definitions
 ################################################################################
 project(cegui)
+
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
+include(CEGUIMacros)
+include(CMakeDependentOption)
 
 ################################################################################
 # Set up version information
@@ -65,7 +65,7 @@ set( CEGUI_ABI_VERSION ${CEGUI_SOVERSION}.${CEGUI_ABI_AGE}.${CEGUI_ABI_REVISION}
 ################################################################################
 # be sure to search the provided dependencies on Win32 and Mac OS X platforms
 if ((WIN32 OR APPLE) AND NOT CMAKE_PREFIX_PATH)
-    set (CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies" CACHE PATH "Path to dependencies")
+    set (CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/dependencies" CACHE PATH "Path to dependencies")
     # prefer the dylib deps in the dependencies over some other framework
     set (CMAKE_FIND_FRAMEWORK LAST)
 endif()
@@ -93,6 +93,7 @@ find_package(GLM)
 find_package(GLFW)
 find_package(GLFW3)
 find_package(SDL2)
+find_package(SDL2_image)
 find_package(DirectXSDK)
 find_package(D3DX11Effects)
 find_package(Irrlicht)
@@ -131,6 +132,14 @@ find_package(Doxygen)
 find_package(GTK2 COMPONENTS gtk)
 # set for consistency with other deps
 set (GTK2_INCLUDE_DIR ${GTK2_INCLUDE_DIRS})
+
+## Search for ccache
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+    set(ENV(CCACHE_CPP2) "yes")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+endif(CCACHE_FOUND)
 
 if (GLEW_FOUND OR EPOXY_FOUND)
     set (OPENGL_LOADER_FOUND TRUE)
@@ -189,6 +198,7 @@ option( CEGUI_BUILD_IMAGECODEC_CORONA "Specifies whether to build the Corona bas
 option( CEGUI_BUILD_IMAGECODEC_STB "Specifies whether to build the STB based ImageCodec module" FALSE )
 option( CEGUI_BUILD_IMAGECODEC_TGA "Specifies whether to build the based TGA only ImageCodec module" FALSE )
 option( CEGUI_BUILD_IMAGECODEC_PVR "Specifies whether to build the PVR only ImageCodec module" ${PVRTOOLS_FOUND} )
+cegui_dependent_option( CEGUI_BUILD_IMAGECODEC_SDL2 "Specifies whether to build the SDL2 ImageCodec module" "SDL2_FOUND;SDL2IMAGE_FOUND" )
 
 cegui_dependent_option( CEGUI_BUILD_RENDERER_OPENGL "Specifies whether to build the old OpenGL renderer module" "OPENGL_gl_LIBRARY;GLM_FOUND;GLEW_FOUND" )
 cegui_dependent_option( CEGUI_BUILD_RENDERER_OPENGL3 "Specifies whether to build the renderer module that supports OpenGL 3.2 (core profile) and OpenGL ES 2.0." "OPENGL_gl_LIBRARY;GLM_FOUND;OPENGL_LOADER_FOUND")
@@ -231,6 +241,7 @@ if (CEGUI_BUILD_RENDERER_OPENGL OR CEGUI_BUILD_RENDERER_OPENGL3)
     endif ()
     if (NOT ANDROID)
         set (CEGUI_GLFW_VER "" CACHE STRING "Specifies which major version of GLFW to use for the samples (2 or 3). The default is to look for both, giving priority to version 2.")
+
         if (((CEGUI_GLFW_VER STREQUAL "2") OR (CEGUI_GLFW_VER STREQUAL "")) AND GLFW_FOUND)
             set (CEGUI_USE_GLFW_VER "2")
         elseif (((CEGUI_GLFW_VER STREQUAL "3")  OR (CEGUI_GLFW_VER STREQUAL "")) AND GLFW3_FOUND)
@@ -409,6 +420,7 @@ cegui_set_module_name( CEGUI_CORONA_IMAGECODEC_LIBNAME CEGUICoronaImageCodec )
 cegui_set_module_name( CEGUI_TGA_IMAGECODEC_LIBNAME CEGUITGAImageCodec )
 cegui_set_module_name( CEGUI_STB_IMAGECODEC_LIBNAME CEGUISTBImageCodec )
 cegui_set_module_name( CEGUI_PVR_IMAGECODEC_LIBNAME CEGUIPVRImageCodec )
+cegui_set_module_name( CEGUI_SDL2_IMAGECODEC_LIBNAME CEGUISDL2ImageCodec )
 
 # WindowRenderer set module names
 cegui_set_module_name( CEGUI_CORE_WR_LIBNAME CEGUICoreWindowRendererSet )
@@ -486,6 +498,9 @@ elseif (CEGUI_BUILD_IMAGECODEC_STB)
 elseif (CEGUI_BUILD_IMAGECODEC_CORONA)
     set( CEGUI_OPTION_DEFAULT_IMAGECODEC "CoronaImageCodec" CACHE STRING "Specifies the ImageCodec module to use as the default" )
     set( CEGUI_STATIC_IMAGECODEC_MODULE ${CEGUI_CORONA_IMAGECODEC_LIBNAME} CACHE STRING "Specifies image codec library to link to samples in static builds." )
+elseif (CEGUI_BUILD_IMAGECODEC_SDL2)
+    set( CEGUI_OPTION_DEFAULT_IMAGECODEC "SDL2ImageCodec" CACHE STRING "Specifies the ImageCodec module to use as the default" )
+    set( CEGUI_STATIC_IMAGECODEC_MODULE ${CEGUI_SDL2_IMAGECODEC_LIBNAME} CACHE STRING "Specifies image codec library to link to samples in static builds." )
 elseif (CEGUI_BUILD_IMAGECODEC_TGA)
     set( CEGUI_OPTION_DEFAULT_IMAGECODEC "TGAImageCodec" CACHE STRING "Specifies the ImageCodec module to use as the default" )
     set( CEGUI_STATIC_IMAGECODEC_MODULE ${CEGUI_TGA_IMAGECODEC_LIBNAME} CACHE STRING "Specifies image codec library to link to samples in static builds." )
@@ -501,6 +516,7 @@ cegui_defaultmodule_sanity_test(CEGUI_OPTION_DEFAULT_IMAGECODEC "FreeImageImageC
 cegui_defaultmodule_sanity_test(CEGUI_OPTION_DEFAULT_IMAGECODEC "STBImageCodec" CEGUI_BUILD_IMAGECODEC_STB)
 cegui_defaultmodule_sanity_test(CEGUI_OPTION_DEFAULT_IMAGECODEC "CoronaImageCodec" CEGUI_BUILD_IMAGECODEC_CORONA)
 cegui_defaultmodule_sanity_test(CEGUI_OPTION_DEFAULT_IMAGECODEC "TGAImageCodec" CEGUI_BUILD_IMAGECODEC_TGA)
+cegui_defaultmodule_sanity_test(CEGUI_OPTION_DEFAULT_IMAGECODEC "SDL2ImageCodec" CEGUI_BUILD_IMAGECODEC_SDL2)
 
 if (CEGUI_BUILD_STATIC_CONFIGURATION)
     cegui_defaultmodule_sanity_test(CEGUI_STATIC_IMAGECODEC_MODULE ${CEGUI_SILLY_IMAGECODEC_LIBNAME} CEGUI_BUILD_IMAGECODEC_SILLY)
@@ -509,14 +525,15 @@ if (CEGUI_BUILD_STATIC_CONFIGURATION)
     cegui_defaultmodule_sanity_test(CEGUI_STATIC_IMAGECODEC_MODULE ${CEGUI_STB_IMAGECODEC_LIBNAME} CEGUI_BUILD_IMAGECODEC_STB)
     cegui_defaultmodule_sanity_test(CEGUI_STATIC_IMAGECODEC_MODULE ${CEGUI_CORONA_IMAGECODEC_LIBNAME} CEGUI_BUILD_IMAGECODEC_CORONA)
     cegui_defaultmodule_sanity_test(CEGUI_STATIC_IMAGECODEC_MODULE ${CEGUI_TGA_IMAGECODEC_LIBNAME} CEGUI_BUILD_IMAGECODEC_TGA)
+    cegui_defaultmodule_sanity_test(CEGUI_STATIC_IMAGECODEC_MODULE ${CEGUI_SDL2_IMAGECODEC_LIBNAME} CEGUI_BUILD_IMAGECODEC_SDL2)
 endif()
 
 ################################################################################
 # Add main header locations (for everything we build)
 ################################################################################
 include_directories(
-    ${CMAKE_CURRENT_BINARY_DIR}/cegui/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/cegui/include
+    ${PROJECT_BINARY_DIR}/cegui/include
+    ${PROJECT_SOURCE_DIR}/cegui/include
 )
 
 
@@ -533,23 +550,23 @@ if (WIN32)
 endif()
 
 # set build output locations
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 if (WIN32)
-    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 else()
-    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 endif()
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
@@ -584,31 +601,31 @@ configure_file( doc/doxygen/doxyfile.in doc/doxygen/doxyfile )
 
 if (UNIX AND NOT APPLE)
     configure_file( cegui/CEGUI.pc.in cegui/CEGUI-${CEGUI_VERSION_MAJOR}.pc @ONLY )
-    install(FILES ${CMAKE_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
+    install(FILES ${PROJECT_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
 
     if (CEGUI_BUILD_RENDERER_NULL)
         configure_file( cegui/CEGUI-NULL.pc.in cegui/CEGUI-${CEGUI_VERSION_MAJOR}-NULL.pc @ONLY )
-        install(FILES ${CMAKE_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-NULL.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
+        install(FILES ${PROJECT_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-NULL.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
     endif()
     if (CEGUI_BUILD_RENDERER_IRRLICHT)
         configure_file( cegui/CEGUI-IRRLICHT.pc.in cegui/CEGUI-${CEGUI_VERSION_MAJOR}-IRRLICHT.pc @ONLY )
-        install(FILES ${CMAKE_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-IRRLICHT.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
+        install(FILES ${PROJECT_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-IRRLICHT.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
     endif()
     if (CEGUI_BUILD_RENDERER_OGRE)
         configure_file( cegui/CEGUI-OGRE.pc.in cegui/CEGUI-${CEGUI_VERSION_MAJOR}-OGRE.pc @ONLY )
-        install(FILES ${CMAKE_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-OGRE.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
+        install(FILES ${PROJECT_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-OGRE.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
     endif()
     if (CEGUI_BUILD_RENDERER_OPENGL)
         configure_file( cegui/CEGUI-OPENGL.pc.in cegui/CEGUI-${CEGUI_VERSION_MAJOR}-OPENGL.pc @ONLY )
-        install(FILES ${CMAKE_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-OPENGL.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
+        install(FILES ${PROJECT_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-OPENGL.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
     endif()
     if (CEGUI_BUILD_RENDERER_OPENGL3)
         configure_file( cegui/CEGUI-OPENGL3.pc.in cegui/CEGUI-${CEGUI_VERSION_MAJOR}-OPENGL3.pc @ONLY )
-        install(FILES ${CMAKE_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-OPENGL3.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
+        install(FILES ${PROJECT_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-OPENGL3.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
     endif()
     if (CEGUI_BUILD_LUA_MODULE)
         configure_file( cegui/CEGUI-LUA.pc.in cegui/CEGUI-${CEGUI_VERSION_MAJOR}-LUA.pc @ONLY )
-        install(FILES ${CMAKE_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-LUA.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
+        install(FILES ${PROJECT_BINARY_DIR}/cegui/CEGUI-${CEGUI_VERSION_MAJOR}-LUA.pc DESTINATION ${CEGUI_PKGCONFIG_INSTALL_DIR})
     endif()
 endif()
 
@@ -644,7 +661,7 @@ add_subdirectory(datafiles)
 if (DOXYGEN_FOUND)
     add_custom_target(html
         "${DOXYGEN_EXECUTABLE}"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen"
+        WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/doc/doxygen"
         COMMENT "Generating documentation" VERBATIM)
 endif()
 
@@ -659,8 +676,8 @@ endif()
 ################################################################################
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Crazy Eddie's Gui System")
 set(CPACK_PACKAGE_VENDOR "CEGUI team")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
 set(CPACK_PACKAGE_VERSION_MAJOR "${CEGUI_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${CEGUI_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${CEGUI_VERSION_PATCH}")
