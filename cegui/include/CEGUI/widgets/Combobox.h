@@ -1029,7 +1029,7 @@ protected:
 	virtual	void	onFontChanged(WindowEventArgs& e);
 	virtual void	onTextChanged(WindowEventArgs& e);
 	virtual void	onActivated(ActivationEventArgs& e);
-    void onSized(ElementEventArgs& e);
+    void onSized_impl(ElementEventArgs& e);
 
 
 	/*************************************************************************

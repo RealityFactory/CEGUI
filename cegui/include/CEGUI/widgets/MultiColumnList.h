@@ -1656,7 +1656,7 @@ protected:
 		Overridden Event handlers
 	*************************************************************************/
 	virtual	void	onFontChanged(WindowEventArgs& e);
-	virtual void	onSized(ElementEventArgs& e);
+	virtual void	onSized_impl(ElementEventArgs& e);
     virtual void    onCursorPressHold(CursorInputEventArgs& e);
     virtual void    onScroll(CursorInputEventArgs& e);
     virtual void    onSemanticInputEvent(SemanticEventArgs& e);

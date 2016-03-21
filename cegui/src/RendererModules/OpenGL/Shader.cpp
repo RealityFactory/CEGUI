@@ -211,7 +211,7 @@ void OpenGLBaseShader::outputProgramLog(GLuint program)
         sstream << "OpenGLBaseShader linking has failed.\n" << logBuffer;
         throw RendererException(sstream.str().c_str());
     }
-};
+}
 
 //----------------------------------------------------------------------------//
 void OpenGLBaseShader::outputShaderLog(GLuint shader)
@@ -228,7 +228,7 @@ void OpenGLBaseShader::outputShaderLog(GLuint shader)
         ss << "OpenGLBaseShader compilation has failed.\n" << logBuffer;
           throw RendererException(ss.str().c_str());
     }
-};
+}
 
 //----------------------------------------------------------------------------//
 void getGLErrors(const char *location)

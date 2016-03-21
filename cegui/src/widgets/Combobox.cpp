@@ -953,12 +953,12 @@ void Combobox::onActivated(ActivationEventArgs& e)
 }
 
 //----------------------------------------------------------------------------//
-void Combobox::onSized(ElementEventArgs& e)
+void Combobox::onSized_impl(ElementEventArgs& e)
 {
     if (isDropDownListVisible())
         updateAutoSizedDropList();
 
-    Window::onSized(e);
+    Window::onSized_impl(e);
 }
 
 

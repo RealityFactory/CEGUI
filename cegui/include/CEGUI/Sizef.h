@@ -31,6 +31,7 @@
 
 #include "CEGUI/AspectMode.h"
 #include "CEGUI/StreamHelper.h"
+#include "CEGUI/Exceptions.h"
 #include <typeinfo>
 
 #include <glm/glm.hpp>
@@ -57,7 +58,11 @@ enum AspectMode
     Satisfies the aspect ratio by expanding the widget as little
     as possible outside it
     * /
-    AM_EXPAND
+    AM_EXPAND,
+    //! Satisfy the aspect ratio by adjusting the height according to the width.
+    AM_ADJUST_HEIGHT,
+    //! Satisfy the aspect ratio by adjusting the width according to the height.
+    AM_ADJUST_WIDTH
 };
 */
 
@@ -163,9 +168,24 @@ public:
         assert(ratio > 0);
 
         const float expectedWidth = d_height * ratio;
-        const bool keepHeight = (mode == AM_SHRINK) ?
-                expectedWidth <= d_width : expectedWidth >= d_width;
-
+        bool keepHeight(false);
+        switch (mode)
+        {
+        case AM_SHRINK:
+            keepHeight = expectedWidth <= d_width;
+            break;
+        case AM_EXPAND:
+            keepHeight = expectedWidth >= d_width;
+            break;
+        case AM_ADJUST_WIDTH:
+            keepHeight = true;
+            break;
+        case AM_ADJUST_HEIGHT:
+            keepHeight = false;
+            break;
+        default:
+            CEGUI_THROW(InvalidRequestException("Invalid aspect mode."));
+        }
         if (keepHeight)
         {
             d_width = expectedWidth;

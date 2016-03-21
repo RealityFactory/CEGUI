@@ -279,6 +279,8 @@ public:
     // d_max.d_y is former d_bottom
 };
 
+typedef Rect<UDim> URect;
+
 } // End of  CEGUI namespace section
 
 

@@ -253,7 +253,8 @@ bool RenderedStringTextComponent::canSplit() const
 RenderedStringTextComponent* RenderedStringTextComponent::split(
                                                         const Window* ref_wnd,
                                                         float split_point,
-                                                        bool first_component)
+                                                        bool first_component,
+                                                        bool& was_word_split)
 {
     const Font* fnt = getEffectiveFont(ref_wnd);
 
@@ -262,6 +263,8 @@ RenderedStringTextComponent* RenderedStringTextComponent::split(
     if (!fnt)
         throw InvalidRequestException(
             "unable to split with no font set.");
+
+    was_word_split = false;
 
     // create 'left' side of split and clone our basic configuration
     RenderedStringTextComponent* lhs = new RenderedStringTextComponent();
@@ -289,10 +292,13 @@ RenderedStringTextComponent* RenderedStringTextComponent::split(
         {
             // if it was the first token, split the token itself
             if (first_component && left_len == 0)
+            {
+                was_word_split = true;
                 left_len =
                     std::max(static_cast<size_t>(1),
                              fnt->getCharAtPixel(
                                 d_text.substr(0, token_len), split_point));
+            }
             
             // left_len is now the character index at which to split the line
             break;

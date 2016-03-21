@@ -405,6 +405,8 @@ public:
     glm::vec2 d_max; // x is former d_right, y is former d_bottom
 };
 
+typedef Rect<UDim> URect;
+
 }
 
 
