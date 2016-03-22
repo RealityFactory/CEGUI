@@ -471,21 +471,21 @@ float Element::adjustSizeToContent_getEpsilon() const
 
 /*----------------------------------------------------------------------------//
     Return the lowest power of 2 (with non-negative integer exponent) which is
-    greater than or equal to "of".
+    greater than or equal to "value".
 ------------------------------------------------------------------------------*/
-static std::uint64_t powOf2Supremum(std::uint64_t of)
+static unsigned int powOf2Supremum(unsigned int value)
 {
-    std::uint64_t num_of_digits(0);
-    if (of)
+    unsigned int num_of_digits = 0;
+    if (value != 0)
     {
-        --of;
-        while (of)
+        --value;
+        while (value != 0)
         {
             ++num_of_digits;
-            of >>= 1;
+            value >>= 1;
         }
     }
-    return static_cast<std::uint64_t>(1) << num_of_digits;
+    return static_cast<unsigned int>(1) << num_of_digits;
 }
 
 //----------------------------------------------------------------------------//
