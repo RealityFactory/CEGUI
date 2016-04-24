@@ -1251,10 +1251,12 @@ void Window::removeChild_impl(Element* element)
 
     wnd->onZChange_impl();
 
-    // There can be issues if a removed window is activated and then added to a parent that has other
-    // active children. In general there is no reason why a removed window should still be active anymore
-    // anyways. Upon or before adding them, they may be reactivated manually if desired.
-    wnd->deactivate();
+    // Removed windows should not be active anymore (they are not attached
+    // to anything so this would not make sense)
+    if(wnd->isActive())
+    {
+        wnd->deactivate();
+    }
 }
 
 //----------------------------------------------------------------------------//
@@ -1737,6 +1739,10 @@ void Window::destroy(void)
     WindowEventArgs args(this);
     onDestructionStarted(args);
 
+    // Check we are detached from parent
+    if (d_parent)
+        d_parent->removeChild(this);
+
     releaseInput();
 
     // let go of the tooltip if we have it
@@ -1746,6 +1752,8 @@ void Window::destroy(void)
 
     // ensure custom tooltip is cleaned up
     setTooltip(static_cast<Tooltip*>(0));
+    
+
 
     // clean up looknfeel related things
     if (!d_lookName.empty())
@@ -1763,10 +1771,6 @@ void Window::destroy(void)
             destroyWindowRenderer(d_windowRenderer);
         d_windowRenderer = 0;
     }
-
-    // double check we are detached from parent
-    if (d_parent)
-        d_parent->removeChild(this);
 
     cleanupChildren();
 
