@@ -78,6 +78,7 @@ const String Window::IDPropertyName("ID");
 const String Window::InheritsAlphaPropertyName("InheritsAlpha");
 const String Window::CursorImagePropertyName("CursorImage");
 const String Window::VisiblePropertyName("Visible");
+const String Window::ActivePropertyName("Active");
 const String Window::RestoreOldCapturePropertyName("RestoreOldCapture");
 const String Window::TextPropertyName("Text");
 const String Window::ZOrderingEnabledPropertyName("ZOrderingEnabled");
@@ -729,6 +730,18 @@ void Window::setVisible(bool setting)
     d_visible ? onShown(args) : onHidden(args);
 
     getGUIContext().updateWindowContainingCursor();
+}
+
+//----------------------------------------------------------------------------//
+void Window::setActive(bool setting)
+{
+  if (isActive() == setting)
+    return;
+
+  if (setting)
+    activate();
+  else
+    deactivate();
 }
 
 //----------------------------------------------------------------------------//
@@ -1395,6 +1408,11 @@ void Window::addWindowProperties(void)
     CEGUI_DEFINE_PROPERTY(Window, bool,
         VisiblePropertyName, "Property to get/set the 'visible state' setting for the Window. Value is either \"true\" or \"false\".",
         &Window::setVisible, &Window::isVisible, true
+    );
+
+    CEGUI_DEFINE_PROPERTY(Window, bool,
+        ActivePropertyName, "Property to get/set the 'active' setting for the Window. Value is either \"true\" or \"false\".",
+        &Window::setActive, &Window::isActive, false 
     );
 
     CEGUI_DEFINE_PROPERTY(Window, bool,
