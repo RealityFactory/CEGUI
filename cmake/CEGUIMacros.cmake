@@ -170,16 +170,25 @@ macro (cegui_add_dependency _TARGET_NAME _DEP_NAME)
     if (${_DEP_NAME}_DEFINITIONS)
         set_property( TARGET ${_TARGET_NAME} APPEND PROPERTY COMPILE_DEFINITIONS ${${_DEP_NAME}_DEFINITIONS} )
     endif()
+    if (${_DEP_NAME}_COMPILE_FLAGS)
+        set_property( TARGET ${_TARGET_NAME} APPEND PROPERTY COMPILE_FLAGS ${${_DEP_NAME}_COMPILE_FLAGS} )
+    endif()
 
     if (CEGUI_BUILD_SHARED_LIBS_WITH_STATIC_DEPENDENCIES)
         if (${_DEP_NAME}_DEFINITIONS_STATIC)
             set_property( TARGET ${_TARGET_NAME} APPEND PROPERTY COMPILE_DEFINITIONS ${${_DEP_NAME}_DEFINITIONS_STATIC} )
+        endif()
+        if (${_DEP_NAME}_COMPILE_FLAGS_STATIC)
+            set_property( TARGET ${_TARGET_NAME} APPEND PROPERTY COMPILE_FLAGS ${${_DEP_NAME}_COMPILE_FLAGS_STATIC} )
         endif()
 
         cegui_add_dependency_static_libs(${_TARGET_NAME} ${_DEP_NAME})
     else()
         if (${_DEP_NAME}_DEFINITIONS_DYNAMIC)
             set_property( TARGET ${_TARGET_NAME} APPEND PROPERTY COMPILE_DEFINITIONS ${${_DEP_NAME}_DEFINITIONS_DYNAMIC} )
+        endif()
+        if (${_DEP_NAME}_COMPILE_FLAGS_DYNAMIC)
+            set_property( TARGET ${_TARGET_NAME} APPEND PROPERTY COMPILE_FLAGS ${${_DEP_NAME}_COMPILE_FLAGS_DYNAMIC} )
         endif()
 
         cegui_add_dependency_dynamic_libs(${_TARGET_NAME} ${_DEP_NAME})
@@ -300,23 +309,23 @@ macro (cegui_add_library_impl _LIB_NAME _IS_MODULE _SOURCE_FILES_VAR _HEADER_FIL
         endif()
 
         install(TARGETS ${_LIB_NAME}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION ${_CEGUI_LIB_DEST}
-            ARCHIVE DESTINATION ${CEGUI_LIB_INSTALL_DIR}
+          RUNTIME DESTINATION bin COMPONENT cegui_bin
+          LIBRARY DESTINATION ${_CEGUI_LIB_DEST} COMPONENT cegui_lib
+          ARCHIVE DESTINATION ${CEGUI_LIB_INSTALL_DIR} COMPONENT cegui_devel
         )
 
         if (CEGUI_BUILD_STATIC_CONFIGURATION)
             install(TARGETS ${_LIB_NAME}_Static
-                RUNTIME DESTINATION bin
-                LIBRARY DESTINATION ${CEGUI_LIB_INSTALL_DIR}
-                ARCHIVE DESTINATION ${CEGUI_LIB_INSTALL_DIR}
+              RUNTIME DESTINATION bin COMPONENT cegui_bin
+              LIBRARY DESTINATION ${CEGUI_LIB_INSTALL_DIR} COMPONENT cegui_lib
+              ARCHIVE DESTINATION ${CEGUI_LIB_INSTALL_DIR} COMPONENT cegui_devel
             )
         endif()
     endif()
 
     if (${_INSTALL_HEADERS})
         string (REPLACE "cegui/src/" "" _REL_HEADER_DIR ${_REL_SRC_DIR})
-        install(FILES ${${_HEADER_FILES_VAR}} DESTINATION "${CEGUI_INCLUDE_INSTALL_DIR}/CEGUI/${_REL_HEADER_DIR}")
+        install(FILES ${${_HEADER_FILES_VAR}} DESTINATION "${CEGUI_INCLUDE_INSTALL_DIR}/CEGUI/${_REL_HEADER_DIR}" COMPONENT cegui_devel)
     endif()
 endmacro()
 
@@ -417,16 +426,16 @@ macro (cegui_add_sample _NAME)
 
     # Setup custom install location
     install(TARGETS ${CEGUI_TARGET_NAME}
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION ${CEGUI_SAMPLE_INSTALL_DIR}
-        ARCHIVE DESTINATION ${CEGUI_SAMPLE_INSTALL_DIR}
+      RUNTIME DESTINATION bin COMPONENT cegui_samples
+      LIBRARY DESTINATION ${CEGUI_SAMPLE_INSTALL_DIR} COMPONENT cegui_samples
+      ARCHIVE DESTINATION ${CEGUI_SAMPLE_INSTALL_DIR} COMPONENT cegui_samples
     )
 
     if (CEGUI_BUILD_STATIC_CONFIGURATION)
         install(TARGETS ${CEGUI_TARGET_NAME}_Static
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION ${CEGUI_SAMPLE_INSTALL_DIR}
-            ARCHIVE DESTINATION ${CEGUI_SAMPLE_INSTALL_DIR}
+          RUNTIME DESTINATION bin COMPONENT cegui_samples
+          LIBRARY DESTINATION ${CEGUI_SAMPLE_INSTALL_DIR} COMPONENT cegui_samples
+          ARCHIVE DESTINATION ${CEGUI_SAMPLE_INSTALL_DIR} COMPONENT cegui_samples
         )
     endif()
 
@@ -470,7 +479,7 @@ macro( cegui_add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS )
         set_target_properties(${PYTHON_MODULE_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
     endif()
 
-    install(TARGETS ${PYTHON_MODULE_NAME} LIBRARY DESTINATION "${CEGUI_PYTHON_INSTALL_DIR}")
+    install(TARGETS ${PYTHON_MODULE_NAME} LIBRARY DESTINATION "${CEGUI_PYTHON_INSTALL_DIR}" COMPONENT cegui_python)
 endmacro()
 
 #
@@ -555,16 +564,16 @@ macro (cegui_add_test_executable _NAME)
     #                           INSTALLATION
     ###########################################################################
     install(TARGETS ${CEGUI_TARGET_NAME}
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION ${CEGUI_LIB_INSTALL_DIR}
-        ARCHIVE DESTINATION ${CEGUI_LIB_INSTALL_DIR}
+      RUNTIME DESTINATION bin COMPONENT cegui_bin
+      LIBRARY DESTINATION ${CEGUI_LIB_INSTALL_DIR} COMPONENT cegui_lib
+      ARCHIVE DESTINATION ${CEGUI_LIB_INSTALL_DIR} COMPONENT cegui_devel
     )
 
     if (CEGUI_BUILD_STATIC_CONFIGURATION)
         install(TARGETS ${CEGUI_TARGET_NAME}_Static
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION ${CEGUI_LIB_INSTALL_DIR}
-            ARCHIVE DESTINATION ${CEGUI_LIB_INSTALL_DIR}
+          RUNTIME DESTINATION bin COMPONENT cegui_bin
+          LIBRARY DESTINATION ${CEGUI_LIB_INSTALL_DIR} COMPONENT cegui_lib 
+          ARCHIVE DESTINATION ${CEGUI_LIB_INSTALL_DIR} COMPONENT cegui_devel
     )
     endif()
 
