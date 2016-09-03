@@ -99,6 +99,7 @@ const String Window::MarginPropertyName("MarginProperty");
 const String Window::UpdateModePropertyName("UpdateMode");
 const String Window::MouseInputPropagationEnabledPropertyName("MouseInputPropagationEnabled");
 const String Window::AutoWindowPropertyName("AutoWindow");
+const String Window::DrawModePropertyName("DrawMode");
 //----------------------------------------------------------------------------//
 const String Window::EventNamespace("Window");
 const String Window::EventUpdated ("Updated");
@@ -1128,6 +1129,49 @@ void Window::render()
 }
 
 //----------------------------------------------------------------------------//
+void Window::render(uint32 drawModeMask)
+{
+    // don't do anything if window is not visible
+    if (!isEffectiveVisible())
+        return;
+    
+    // get rendering context
+    RenderingContext ctx;
+    getRenderingContext(ctx);
+
+    // clear geometry from surface if it's ours
+    if (ctx.owner == this)
+        ctx.surface->clearGeometry();
+
+    bool allowDrawing = checkIfDrawingAllowed(drawModeMask);
+
+    // redraw if no surface set, or if surface is invalidated
+    if (!d_surface || d_surface->isInvalidated())
+    {
+        if(allowDrawing)
+        {
+            // perform drawing for 'this' Window
+            drawSelf(ctx);
+        }
+
+        // render any child windows
+        for (ChildDrawList::iterator it = d_drawList.begin(); it != d_drawList.end(); ++it)
+        {
+            (*it)->render(drawModeMask);
+        }
+    }
+
+    // do final rendering for surface if it's ours
+    if (ctx.owner == this && allowDrawing)
+        ctx.surface->draw();
+}
+
+bool Window::checkIfDrawingAllowed(uint32 drawModeMask) const
+{
+    return (getDrawMode() & drawModeMask) != 0;
+}
+
+//----------------------------------------------------------------------------//
 void Window::drawSelf(const RenderingContext& ctx)
 {
     bufferGeometry(ctx);
@@ -1530,6 +1574,15 @@ void Window::addWindowProperties(void)
         "automatically created sub-component window."
         "Value is either \"true\" or \"false\".",
         &Window::setAutoWindow, &Window::isAutoWindow, false
+    );
+
+    CEGUI_DEFINE_PROPERTY(Window, uint32,
+        DrawModePropertyName, "Property to get/set a bitmask that specifies whether the window should be "
+        "drawn or not be drawn in a draw call. The draw call may have its own bitmask specified otherwise "
+        "a bitmask with all bits at 1 is taken. The bitmask of the draw call and the Window are compared "
+        "using a bitwise AND, only if the result is not zero the Window will be drawn."
+        "Value is a bitmask of 32 bit size, which will be checked against the bitmask specified for the draw call.",
+        &Window::setDrawMode, &Window::getDrawMode, DrawModeFlagWindowRegular
     );
 }
 
@@ -3978,6 +4031,29 @@ bool Window::handleFontRenderSizeChange(const EventArgs& args)
 bool Window::isMouseContainedInArea() const
 {
     return d_containsMouse;
+}
+
+
+//----------------------------------------------------------------------------//
+void Window::setDrawMode(uint32 drawModeMask)
+{
+    //TODO v0: use a member variable instead
+    String drawModeProperty = PropertyHelper<uint32>::toString(drawModeMask);
+    setUserString(DrawModePropertyName, drawModeProperty);
+}
+
+//----------------------------------------------------------------------------//
+uint32 Window::getDrawMode() const
+{
+    //TODO v0: use a member variable instead
+    bool isDrawModePresent = isUserStringDefined(DrawModePropertyName);
+    if(isDrawModePresent)
+    {
+        String drawModeProperty = getUserString(DrawModePropertyName);
+        return PropertyHelper<uint32>::fromString(drawModeProperty);
+    }
+
+    return DrawModeFlagWindowRegular;
 }
 
 //----------------------------------------------------------------------------//

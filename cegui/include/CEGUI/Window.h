@@ -215,6 +215,8 @@ public:
     static const String MouseInputPropagationEnabledPropertyName;
     //! Name of property to access whether the system considers this window to be an automatically created sub-component window.
     static const String AutoWindowPropertyName;
+    //! Name of property to access the DrawMode that is set for this Window, which decides in what draw call it will or will not be drawn.
+    static const String DrawModePropertyName;
 
     /*************************************************************************
         Event name constants
@@ -516,6 +518,15 @@ public:
     static const String AutoWindowNamePathXMLAttributeName;
     static const String UserStringNameXMLAttributeName;
     static const String UserStringValueXMLAttributeName;
+
+    
+    //! Draw bitmask for drawing all objects (default draw mode)
+    static const uint32 DrawModeMaskAll = ~0U;
+    //! Draw bit flag signifying a regular window (default window flag)
+    static const uint32 DrawModeFlagWindowRegular = 1U << 0;
+    //! Draw bit flag signifying a mouse cursor
+    static const uint32 DrawModeFlagMouseCursor = 1U << 1;
+
 
     /*!
     \brief
@@ -2358,6 +2369,20 @@ public:
     */
     void render();
 
+    
+    /*!
+    \brief
+        Causes the Window object to render itself and all of it's attached
+        children
+
+    \param drawMode
+        The drawMode specifies if this window (and which of its children) shall be rendered in this pass.
+
+    \return
+        Nothing
+    */
+    void render(uint32 drawMode);
+
     /*!
     \brief
         Cause window to update itself and any attached children.  Client code
@@ -2823,8 +2848,45 @@ public:
     */
     bool isMouseContainedInArea() const;
 
+    /*!
+    \brief
+        Sets the DrawMode bitmask for this Window.
+
+        The DrawMode of this Window specifies when the Window should be
+        drawn. The bitmask of this window is checked against the mask supplied
+        in the draw call in that case.
+    \param drawMode
+        The drawMode bitmask to be set for this Window.
+    */
+    void setDrawMode(uint32 drawMode);
+
+    /*!
+    \brief
+        Gets the DrawMode bitmask of this Window.
+
+        The DrawMode of this Window specifies when the Window should be
+        drawn. The bitmask of this window is checked against the mask supplied
+        in the draw call in that case.
+    \return
+        The drawMode bitmask that is set for this Window.
+    */
+    uint32 getDrawMode() const;
+
     // overridden from Element
     const Sizef& getRootContainerSize() const;
+ 
+    /*!
+    \brief
+        Checks if the "DrawMode" property of this window is compatible with
+        the drawMode bitmask that is supplied-
+
+    \param drawMode
+        The "DrawMode" bitmask to check this window's bitmask against.
+
+    \return
+        True if a bitwise and between the masks return non-zero.
+    */
+    bool checkIfDrawingAllowed(uint32 drawModeMask) const;
 
     float getContentWidth() const;
     float getContentHeight() const;

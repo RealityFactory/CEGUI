@@ -287,6 +287,20 @@ void GUIContext::draw()
     RenderingSurface::draw();
 }
 
+
+//----------------------------------------------------------------------------//
+void GUIContext::draw(uint32 drawModeMask)
+{
+    //TODO v0: store last drawModeMask used for this GUIContext and only mark
+    //dirty if it is different in this draw-call
+    d_isDirty = true;
+
+    if (d_isDirty)
+        drawWindowContentToTarget(drawModeMask);
+
+    RenderingSurface::draw(drawModeMask);
+}
+
 //----------------------------------------------------------------------------//
 void GUIContext::drawContent()
 {
@@ -296,10 +310,32 @@ void GUIContext::drawContent()
 }
 
 //----------------------------------------------------------------------------//
+void GUIContext::drawContent(uint32 drawModeMask)
+{
+    RenderingSurface::drawContent();
+
+    if(drawModeMask & Window::DrawModeFlagMouseCursor)
+    {
+        d_mouseCursor.draw();
+    }
+}
+
+//----------------------------------------------------------------------------//
 void GUIContext::drawWindowContentToTarget()
 {
     if (d_rootWindow)
         renderWindowHierarchyToSurfaces();
+    else
+        clearGeometry();
+
+    d_isDirty = false;
+}
+
+//----------------------------------------------------------------------------//
+void GUIContext::drawWindowContentToTarget(uint32 drawModeMask)
+{
+    if (d_rootWindow)
+        renderWindowHierarchyToSurfaces(drawModeMask);
     else
         clearGeometry();
 
@@ -316,6 +352,18 @@ void GUIContext::renderWindowHierarchyToSurfaces()
         static_cast<RenderingWindow&>(rs).getOwner().clearGeometry();
 
     d_rootWindow->render();
+}
+
+//----------------------------------------------------------------------------//
+void GUIContext::renderWindowHierarchyToSurfaces(uint32 drawModeMask)
+{
+    RenderingSurface& rs = d_rootWindow->getTargetRenderingSurface();
+    rs.clearGeometry();
+
+    if (rs.isRenderingWindow())
+        static_cast<RenderingWindow&>(rs).getOwner().clearGeometry();
+
+    d_rootWindow->render(drawModeMask);
 }
 
 //----------------------------------------------------------------------------//

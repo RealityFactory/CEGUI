@@ -281,11 +281,14 @@ public:
 
     // public overrides
     void draw();
+    void draw(uint32 drawMode);
 
 protected:
     void updateRootWindowAreaRects() const;
     void drawWindowContentToTarget();
+    void drawWindowContentToTarget(uint32 drawModeMask);
     void renderWindowHierarchyToSurfaces();
+    void renderWindowHierarchyToSurfaces(uint32 drawModeMask);
 
     void createDefaultTooltipWindowInstance() const;
     void destroyDefaultTooltipWindowInstance();
@@ -320,6 +323,7 @@ protected:
 
     // protected overrides
     void drawContent();
+    void drawContent(uint32 drawModeMask);
 
     Window* d_rootWindow;
     bool d_isDirty;
