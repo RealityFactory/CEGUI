@@ -94,7 +94,9 @@ namespace CEGUI
 class CEGUIEXPORT UDim
 {
 public:
-    inline UDim()
+    inline UDim() :
+        d_scale(0),
+        d_offset(0)
     {}
     
     inline UDim(float scale, float offset):
