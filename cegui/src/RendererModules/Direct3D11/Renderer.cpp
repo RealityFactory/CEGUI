@@ -416,13 +416,13 @@ GeometryBuffer& Direct3D11Renderer::createGeometryBufferColoured(CEGUI::RefCount
 //----------------------------------------------------------------------------//
 RefCounted<RenderMaterial> Direct3D11Renderer::createRenderMaterial(const DefaultShaderType shaderType) const
 {
-    if(shaderType == DS_TEXTURED)
+    if(shaderType == DefaultShaderType::TEXTURED)
     {
         RefCounted<RenderMaterial> render_material(new RenderMaterial(d_shaderWrapperTextured));
 
         return render_material;
     }
-    else if(shaderType == DS_SOLID)
+    else if(shaderType == DefaultShaderType::SOLID)
     {
         RefCounted<RenderMaterial> render_material(new RenderMaterial(d_shaderWrapperSolid));
 
@@ -442,11 +442,11 @@ void Direct3D11Renderer::initialiseStandardTexturedShaderWrapper()
     Direct3D11Shader* shader_standard_textured = new Direct3D11Shader(*this, VertexShaderTextured, PixelShaderTextured);
     d_shaderWrapperTextured = new Direct3D11ShaderWrapper(*shader_standard_textured, this);
 
-    d_shaderWrapperTextured->addUniformVariable("texture0", ShaderType::PIXEL, SPT_TEXTURE);
+    d_shaderWrapperTextured->addUniformVariable("texture0", ShaderType::PIXEL, ShaderParamType::TEXTURE);
 
-    d_shaderWrapperTextured->addUniformVariable("modelViewProjMatrix", ShaderType::VERTEX, SPT_MATRIX_4X4);
+    d_shaderWrapperTextured->addUniformVariable("modelViewProjMatrix", ShaderType::VERTEX, ShaderParamType::MATRIX_4X4);
     d_shaderWrapperTextured->addUniformVariable("alphaPercentage", ShaderType::PIXEL, 
-        SPT_FLOAT);
+        ShaderParamType::FLOAT);
 }
 
 //----------------------------------------------------------------------------//
@@ -455,9 +455,9 @@ void Direct3D11Renderer::initialiseStandardColouredShaderWrapper()
     Direct3D11Shader* shader_standard_solid = new Direct3D11Shader(*this, VertexShaderColoured, PixelShaderColoured);
     d_shaderWrapperSolid = new Direct3D11ShaderWrapper(*shader_standard_solid, this);
 
-    d_shaderWrapperSolid->addUniformVariable("modelViewProjMatrix", ShaderType::VERTEX, SPT_MATRIX_4X4);
+    d_shaderWrapperSolid->addUniformVariable("modelViewProjMatrix", ShaderType::VERTEX, ShaderParamType::MATRIX_4X4);
     d_shaderWrapperSolid->addUniformVariable("alphaPercentage", ShaderType::PIXEL, 
-        SPT_FLOAT);
+        ShaderParamType::FLOAT);
 }
 
 //----------------------------------------------------------------------------//
@@ -533,7 +533,7 @@ void Direct3D11Renderer::bindBlendMode(BlendMode d_blendMode)
 {
     const FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
-    if (d_blendMode == BM_NORMAL)
+    if (d_blendMode == BlendMode::NORMAL)
     {
         if (d_currentBlendState != d_blendStateNormal)
         {
@@ -542,7 +542,7 @@ void Direct3D11Renderer::bindBlendMode(BlendMode d_blendMode)
         }
     }
 
-    if (d_blendMode == BM_RTT_PREMULTIPLIED)
+    if (d_blendMode == BlendMode::RTT_PREMULTIPLIED)
     {
         if (d_currentBlendState != d_blendStatePreMultiplied)
         {

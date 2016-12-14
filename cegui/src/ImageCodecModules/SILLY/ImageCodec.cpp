@@ -63,13 +63,13 @@ Texture* SILLYImageCodec::load(const RawDataContainer& data, Texture* result)
     Texture::PixelFormat cefmt;
     switch (img.getSourcePixelFormat())
     {
-    case SILLY::PixelFormat::RGB:
-        dstfmt = SILLY::PixelFormat::RGB;
+    case SILLY::PF_RGB:
+        dstfmt = SILLY::PF_RGB;
         cefmt = Texture::PixelFormat::RGB;
         break;
-    case SILLY::PixelFormat::RGBA:
+    case SILLY::PF_RGBA:
     case SILLY::PF_A1B5G5R5:
-        dstfmt = SILLY::PixelFormat::RGBA;
+        dstfmt = SILLY::PF_RGBA;
         cefmt = Texture::PixelFormat::RGBA;
         break;
     default:

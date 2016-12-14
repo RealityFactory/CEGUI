@@ -135,7 +135,7 @@ struct OgreRenderer_impl
         d_dummyCamera(0),
         d_workspace(0),
 #endif
-        d_activeBlendMode(BM_INVALID),
+        d_activeBlendMode(BlendMode::INVALID),
         d_makeFrameControlCalls(true),
         d_useGLSL(false),
         d_useGLSLES(false),
@@ -1007,7 +1007,7 @@ void OgreRenderer::setupRenderingBlendMode(const BlendMode mode,
 
     d_pimpl->d_activeBlendMode = mode;
 
-    if (d_pimpl->d_activeBlendMode == BM_RTT_PREMULTIPLIED)
+    if (d_pimpl->d_activeBlendMode == BlendMode::RTT_PREMULTIPLIED)
         d_pimpl->d_renderSystem->_setSceneBlending(SBF_ONE,
                                                     SBF_ONE_MINUS_SOURCE_ALPHA);
     else
@@ -1084,7 +1084,7 @@ void OgreRenderer::initialiseRenderStateSettings()
     d_pimpl->d_renderSystem->setScissorTest(false);
 
     // set alpha blending to known state
-    setupRenderingBlendMode(BM_NORMAL, true);
+    setupRenderingBlendMode(BlendMode::NORMAL, true);
 }
 
 //----------------------------------------------------------------------------//
@@ -1135,14 +1135,14 @@ void OgreRenderer::bindBlendMode(BlendMode blend)
 RefCounted<RenderMaterial> OgreRenderer::createRenderMaterial(
     const DefaultShaderType shaderType) const
 {
-    if (shaderType == DS_TEXTURED)
+    if (shaderType == DefaultShaderType::TEXTURED)
     {
         RefCounted<RenderMaterial> render_material(new 
             RenderMaterial(d_pimpl->d_texturedShaderWrapper));
 
         return render_material;
     }
-    else if (shaderType == DS_SOLID)
+    else if (shaderType == DefaultShaderType::SOLID)
     {
         RefCounted<RenderMaterial> render_material(new 
             RenderMaterial(d_pimpl->d_colouredShaderWrapper));
